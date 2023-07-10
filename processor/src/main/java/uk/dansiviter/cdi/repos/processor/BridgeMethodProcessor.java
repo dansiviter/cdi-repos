@@ -38,7 +38,7 @@ import uk.dansiviter.cdi.repos.Util;
  * {@code #get}).
  */
 public class BridgeMethodProcessor implements SubProcessor<ExecutableElement> {
-	private static Set<String> BRIDGE_METHODS = Set.of("find", "get", "persist", "merge", "delete", "remove", "save", "flush");
+	private static final Set<String> BRIDGE_METHODS = Set.of("find", "get", "persist", "merge", "delete", "remove", "save", "flush");
 
 	@Override
 	public void process(ProcessorContext ctx, Builder builder, ExecutableElement e) {
@@ -79,6 +79,9 @@ public class BridgeMethodProcessor implements SubProcessor<ExecutableElement> {
 				verifyParamCount(ctx, 1, e);
 				method.addStatement("this.em.remove($L)", e.getParameters().get(0));
 				break;
+			default:
+				ctx.env().getMessager().printMessage(ERROR, "Unexpected method name", e);
+			  break;
 		}
 
 		builder.addMethod(method.build());
