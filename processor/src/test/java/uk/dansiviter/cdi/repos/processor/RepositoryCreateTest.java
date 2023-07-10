@@ -1,0 +1,95 @@
+/*
+ * Copyright 2023 Daniel Siviter
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package uk.dansiviter.cdi.repos.processor;
+
+import java.lang.reflect.InvocationTargetException;
+import java.time.LocalDate;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Optional;
+import java.util.OptionalInt;
+import java.util.stream.Stream;
+
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.TemporalType;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import uk.dansiviter.cdi.repos.annotations.Query;
+import uk.dansiviter.cdi.repos.annotations.Repository;
+import uk.dansiviter.cdi.repos.annotations.Temporal;
+
+/**
+ *
+ */
+@ExtendWith(MockitoExtension.class)
+class RepositoryCreateTest {
+	@Test
+	void classCreated() throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException, ClassNotFoundException {
+		Class.forName(MyRepo.class.getName() + "$impl")
+			.getDeclaredConstructor()
+			.newInstance();
+	}
+
+
+	static class MyEntity { }
+
+	interface MyCrudRepo {
+		Optional<MyEntity> find(int key);
+
+		void persist(MyEntity key);
+
+		void merge(MyEntity key);
+
+		void save(MyEntity entity);
+
+		void delete(MyEntity entity);
+
+		void flush();
+	}
+
+	@Repository
+	interface MyRepo extends MyCrudRepo {
+		@Query("voidQuery")
+		void voidQuery();
+
+		@Query("updateQuery")
+		int updateQuery();
+
+		@Query("query")
+		List<MyEntity> query(OptionalInt arg);
+
+		// @Query(name = "storedProcedure", storedProcedure = true)
+		// List<MyEntity> storedProcedure(int arg);
+
+		@Query(value = "namedParametersQuery", namedParameters = true)
+		List<MyEntity> namedParametersQuery(int integer);
+
+		@Query(value = "temporalQuery")
+		List<MyEntity> temporalQuery(@Temporal(TemporalType.DATE) Calendar date);
+
+		@Query("streamQuery")
+		Stream<MyEntity> streamQuery();
+
+		EntityManager em();
+
+		default void anotherMethods(String foo) {
+			em().clear();
+		}
+	}
+}
