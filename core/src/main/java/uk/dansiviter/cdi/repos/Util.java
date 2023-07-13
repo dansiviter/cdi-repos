@@ -40,8 +40,8 @@ public enum Util { ;
 		if (id == null) {
 			return true;
 		}
-		if (id instanceof Number) {
-			return ((Number) id).intValue() == 0;
+		if (id instanceof Number n) {
+			return n.intValue() == 0;
 		}
 		return false;
 	}
