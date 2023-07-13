@@ -14,6 +14,6 @@ interface Foo {
 
   void merge(Object arg0, Object arg1);
 
-  @Query(value = "storedProcedure", storedProcedure = true)
-  void storedProcedure(Object arg0, Object arg1);
+  @Query(value = "query")
+  MyEntity badResponse(Object arg0, Object arg1);
 }

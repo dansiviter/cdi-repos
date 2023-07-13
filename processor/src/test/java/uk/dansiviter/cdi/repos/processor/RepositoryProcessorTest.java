@@ -52,6 +52,5 @@ class RepositoryProcessorTest {
 		assertThat(compilation).failed();
 		assertThat(compilation).hadErrorContaining("Only 1 params supported");
 		assertThat(compilation).hadErrorContaining("Query name cannot be empty");
-		assertThat(compilation).hadErrorContaining("Stored procedure queries not supported yet");
 	}
 }

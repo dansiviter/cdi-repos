@@ -4,11 +4,13 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.PersistenceContextType;
+import jakarta.transaction.Transactional;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,11 +24,18 @@ import uk.dansiviter.cdi.repos.annotations.Repository;
 interface Good {
 	Optional<MyEntity> find(int key);
 
-	void persist(MyEntity key);
+	MyEntity persist(MyEntity entity);
 
-	void merge(MyEntity key);
+	void persistAndFlush(MyEntity entity);
+
+	void merge(MyEntity entity);
+
+	void mergeAndFlush(MyEntity entity);
 
 	void save(MyEntity entity);
+
+	@Transactional
+	MyEntity saveAndFlush(MyEntity entity);
 
 	void delete(int key);
 
@@ -38,13 +47,11 @@ interface Good {
 	@Query("query")
 	void query(OptionalInt arg);
 
-	// @Query(value = "storedProcedureQuery", storedProcedure = true)
-	// List<MyEntity> storedProcedureQuery(int arg);
-
 	@Query(value = "query", namedParameters = true)
 	int namedParametersQuery(int arg);
 
 	@Query(value = "query")
+	@Transactional(rollbackOn = ExecutionException.class)
 	Stream<MyEntity> streamQuery();
 
 	EntityManager em();

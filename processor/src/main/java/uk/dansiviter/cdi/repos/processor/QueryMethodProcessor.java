@@ -15,7 +15,11 @@
  */
 package uk.dansiviter.cdi.repos.processor;
 
+import static javax.lang.model.type.TypeKind.INT;
+import static javax.lang.model.type.TypeKind.LONG;
+import static javax.lang.model.type.TypeKind.VOID;
 import static javax.tools.Diagnostic.Kind.ERROR;
+import static uk.dansiviter.cdi.repos.processor.ProcessorUtil.addTransactional;
 import static uk.dansiviter.cdi.repos.processor.ProcessorUtil.isClass;
 
 import java.util.List;
@@ -23,7 +27,6 @@ import java.util.stream.Stream;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
-import javax.lang.model.type.TypeKind;
 
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeName;
@@ -32,11 +35,12 @@ import com.squareup.javapoet.TypeSpec.Builder;
 import uk.dansiviter.cdi.repos.Util;
 import uk.dansiviter.cdi.repos.annotations.Query;
 import uk.dansiviter.cdi.repos.annotations.Temporal;
+import uk.dansiviter.cdi.repos.processor.RepositoryProcessor.SubProcessor;
 
 /**
  * This processor handles {@link Query} annotation methods.
  */
-public class QueryMethodProcessor implements SubProcessor<ExecutableElement> {
+class QueryMethodProcessor implements SubProcessor<ExecutableElement> {
 	@Override
 	public void process(ProcessorContext ctx, Builder builder, ExecutableElement e) {
 		var query = e.getAnnotation(Query.class);
@@ -53,13 +57,9 @@ public class QueryMethodProcessor implements SubProcessor<ExecutableElement> {
 				.addAnnotation(Override.class)
 				.addModifiers(Modifier.PUBLIC)
 				.returns(TypeName.get(e.getReturnType()));
+		addTransactional(method, e);
 
-		if (query.storedProcedure()) {
-			ctx.env().getMessager().printMessage(ERROR, "Stored procedure queries not supported yet", e);
-			return;
-		} else {
-			method.addStatement("var q = this.em.createNamedQuery($S)", query.value());
-		}
+		method.addStatement("var q = this.em.createNamedQuery($S)", query.value());
 
 		parameters(ctx, builder, e, method, query);
 
@@ -67,9 +67,9 @@ public class QueryMethodProcessor implements SubProcessor<ExecutableElement> {
 			method.addStatement("return q.getResultStream()");
 		} else if (isClass(ctx.env(), e.getReturnType(), List.class)) {
 			method.addStatement("return q.getResultList()");
-		} else if (e.getReturnType().getKind() == TypeKind.INT || e.getReturnType().getKind() == TypeKind.LONG) {
+		} else if (e.getReturnType().getKind() == INT || e.getReturnType().getKind() == LONG) {
 			method.addStatement("return q.executeUpdate()");
-		} else if (e.getReturnType().getKind() == TypeKind.VOID) {
+		} else if (e.getReturnType().getKind() == VOID) {
 			method.addStatement("q.executeUpdate()");
 		} else {
 			ctx.env().getMessager().printMessage(ERROR, "Unknown return type '" + e.getReturnType() + "'!", e);

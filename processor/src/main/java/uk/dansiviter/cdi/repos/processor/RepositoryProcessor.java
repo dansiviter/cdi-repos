@@ -20,7 +20,6 @@ import static javax.lang.model.element.Modifier.PRIVATE;
 import static javax.lang.model.element.Modifier.PUBLIC;
 import static javax.tools.Diagnostic.Kind.ERROR;
 import static javax.tools.Diagnostic.Kind.NOTE;
-import static javax.tools.StandardLocation.CLASS_OUTPUT;
 import static uk.dansiviter.cdi.repos.processor.ProcessorUtil.className;
 import static uk.dansiviter.cdi.repos.processor.ProcessorUtil.classSimpleName;
 
@@ -37,6 +36,7 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.PackageElement;
@@ -44,10 +44,8 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.json.Json;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.PersistenceContextType;
 
 import com.squareup.javapoet.AnnotationSpec;
 import com.squareup.javapoet.FieldSpec;
@@ -133,47 +131,17 @@ public class RepositoryProcessor extends AbstractProcessor {
 			javaFile.build().writeTo(processingEnv.getFiler());
 		} catch (IOException e) {
 			processingEnv.getMessager().printMessage(ERROR, e.getMessage(), type);
-			return;
-		}
-
-		var resourceFileName = format("META-INF/native-image/%s/%s/native-image.json", pkg.getQualifiedName(), className);
-		try {
-			// would be nice to have SOURCE_OUTPUT but for some reason Maven isn't
-			// processing it
-			var resourceFile = processingEnv.getFiler().createResource(CLASS_OUTPUT, "", resourceFileName);
-			try (var out = Json.createWriter(resourceFile.openOutputStream())) {
-				var array = Json.createArrayBuilder().add(
-						Json.createObjectBuilder()
-								.add("name", format("%s.%s", pkg.getQualifiedName(), concreteName))
-								.add("allDeclaredConstructors", true)
-								.add("allPublicMethods", true));
-				out.writeArray(array.build());
-			}
-		} catch (IOException e) {
-			processingEnv.getMessager().printMessage(ERROR, e.getMessage(), type);
 		}
 	}
 
 	private void processPersistenceContext(ProcessorContext ctx, TypeSpec.Builder builder, TypeElement type) {
 		var persistenceCtx = type.getAnnotation(PersistenceContext.class);
-		var annotation = AnnotationSpec
-				.builder(PersistenceContext.class);
-		if (persistenceCtx != null) {
-			if (!persistenceCtx.name().isEmpty()) {
-				annotation.addMember("name", "$S", persistenceCtx.name());
-			}
-			if (!persistenceCtx.unitName().isEmpty()) {
-				annotation.addMember("unitName", "$S", persistenceCtx.unitName());
-			}
-			if (persistenceCtx.type() != PersistenceContextType.TRANSACTION) {
-				annotation.addMember("type", "$L", persistenceCtx.type());
-				ctx.fileDecorators.add(f -> f.addStaticImport(persistenceCtx.type()));
-			}
-		}
+		var annotation = persistenceCtx != null ?
+			AnnotationSpec.get(persistenceCtx) : AnnotationSpec.builder(PersistenceContext.class).build();
 
 		builder.addField(FieldSpec
 				.builder(EntityManager.class, "em", PRIVATE)
-				.addAnnotation(annotation.build()).build());
+				.addAnnotation(annotation).build());
 	}
 
 	private static Stream<? extends ExecutableElement> methods(ProcessorContext ctx, TypeElement type) {
@@ -188,5 +156,9 @@ public class RepositoryProcessor extends AbstractProcessor {
 				.flatMap(t -> methods(ctx, t));
 
 		return Stream.concat(methods, interfaceMethods);
+	}
+
+	interface SubProcessor<E extends Element> {
+		void process(ProcessorContext ctx, TypeSpec.Builder builder, E element);
 	}
 }

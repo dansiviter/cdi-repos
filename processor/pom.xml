@@ -25,15 +25,9 @@
 			<version>[1.13,2.0)</version>
 		</dependency>
 		<dependency>
-			<groupId>org.eclipse.parsson</groupId>
-			<artifactId>jakarta.json</artifactId>
-			<version>1.1.1</version>
-		</dependency>
-
-		<dependency>
 			<groupId>com.google.testing.compile</groupId>
 			<artifactId>compile-testing</artifactId>
-			<version>0.19</version>
+			<version>0.21.0</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
@@ -47,8 +41,6 @@
 						<id>default-compile</id>
 						<configuration>
 							<proc>none</proc>
-							<showWarnings>true</showWarnings>
-							<verbose>true</verbose>
 						</configuration>
 					</execution>
 				</executions>
@@ -57,7 +49,10 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
 					<argLine>
-						@{argLine} --add-opens jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED
+						@{argLine}
+						--add-opens jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED
+						--add-opens jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
+						--add-opens jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED
 					</argLine>
 				</configuration>
 			</plugin>

@@ -21,21 +21,18 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+import jakarta.persistence.NamedNativeQuery;
+
 /**
- *
+ * Defines the {@link NamedQuery} or {@link NamedNativeQuery} to use.
  */
 @Target(METHOD)
 @Retention(RUNTIME)
 public @interface Query {
 	/**
-	 * @return the name of the {@link NamedQuery}.
+	 * @return the name of the {@link NamedQuery} or {@link NamedNativeQuery}.
 	 */
 	String value();
-
-	/**
-	 * @return if this is a stored procedure query or not.
-	 */
-	boolean storedProcedure() default false;
 
 	/**
 	 * @return if this is to use named parameters over positional.
