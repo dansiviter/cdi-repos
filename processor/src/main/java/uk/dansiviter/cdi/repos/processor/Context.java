@@ -20,23 +20,19 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.TypeElement;
 
 import com.squareup.javapoet.JavaFile;
-import com.squareup.javapoet.TypeSpec;
 
 /**
  * Defines a processing context.
  */
 record Context(
 	RepositoryProcessor parent,
-	TypeElement rootType,
-	TypeSpec.Builder builder,
 	List<Consumer<JavaFile.Builder>> fileDecorators)
 {
 
-	Context(RepositoryProcessor parent, TypeElement rootType, TypeSpec.Builder builder) {
-		this(parent, rootType, builder, new ArrayList<>());
+	Context(RepositoryProcessor parent) {
+		this(parent, new ArrayList<>());
 	}
 
 	ProcessingEnvironment env() {

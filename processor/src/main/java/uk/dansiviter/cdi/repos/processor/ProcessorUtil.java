@@ -46,14 +46,6 @@ enum ProcessorUtil { ;
 		throw new IllegalStateException("Unknown type! " + e) ;
 	}
 
-	static String classSimpleName(ProcessingEnvironment env, Element e) {
-		var name = className(env, e);
-		if (name != null) {
-			return name.substring(name.lastIndexOf('.') + 1);
-		}
-		return null;
-	}
-
 	static boolean isClass(ProcessingEnvironment env, Element e, Class<?> cls) {
 		return cls.getName().equals(className(env, e));
 	}

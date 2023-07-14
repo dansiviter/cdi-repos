@@ -21,7 +21,6 @@ import static javax.lang.model.element.Modifier.PUBLIC;
 import static javax.tools.Diagnostic.Kind.ERROR;
 import static javax.tools.Diagnostic.Kind.NOTE;
 import static uk.dansiviter.cdi.repos.processor.ProcessorUtil.className;
-import static uk.dansiviter.cdi.repos.processor.ProcessorUtil.classSimpleName;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -89,7 +88,7 @@ public class RepositoryProcessor extends AbstractProcessor {
 		var pkg = this.processingEnv.getElementUtils().getPackageOf(element);
 		var type = element.asType();
 		var className = className(processingEnv, element);
-		var concreteName = classSimpleName(processingEnv, element).concat("$impl");
+		var concreteName = className.substring(className.lastIndexOf('.') + 1).concat("$impl");
 		createConcrete(className, element, type, concreteName, pkg);
 	}
 
@@ -117,9 +116,9 @@ public class RepositoryProcessor extends AbstractProcessor {
 						.build())
 				.addSuperinterface(typeMirror);
 
-		var ctx = new Context(this, type, typeBuilder);
+		var ctx = new Context(this);
 
-		processPersistenceContext(ctx, typeBuilder, type);
+		processPersistenceContext(typeBuilder, type);
 
 		methods(ctx, type).forEach(m -> METHOD_PROCESSORS.forEach(p -> p.process(ctx, typeBuilder, m)));
 
@@ -134,7 +133,7 @@ public class RepositoryProcessor extends AbstractProcessor {
 		}
 	}
 
-	private void processPersistenceContext(Context ctx, TypeSpec.Builder builder, TypeElement type) {
+	private void processPersistenceContext(TypeSpec.Builder builder, TypeElement type) {
 		var persistenceCtx = type.getAnnotation(PersistenceContext.class);
 		var annotation = persistenceCtx != null ?
 			AnnotationSpec.get(persistenceCtx) : AnnotationSpec.builder(PersistenceContext.class).build();

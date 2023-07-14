@@ -114,9 +114,8 @@ class BridgeMethodProcessor implements SubProcessor<ExecutableElement> {
 	private static void processRemove(Matcher matcher, Context ctx, MethodSpec.Builder method, ExecutableElement e) {
 		verifyParamCount(ctx, 1, e);
 
-		wrapFlush(matcher.group(1) != null, method, () -> {
-			method.addStatement("this.em.remove($L)", e.getParameters().get(0));
-		});
+		wrapFlush(matcher.group(1) != null, method,
+			() -> method.addStatement("this.em.remove($L)", e.getParameters().get(0)));
 	}
 
 	private static void processFlush(Matcher matcher, Context ctx, MethodSpec.Builder method, ExecutableElement e) {

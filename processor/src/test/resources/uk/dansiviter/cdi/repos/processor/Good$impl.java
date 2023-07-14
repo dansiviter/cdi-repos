@@ -6,6 +6,7 @@ import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.PersistenceContextType;
 import jakarta.transaction.Transactional;
 import java.lang.Override;
+import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.concurrent.ExecutionException;
@@ -92,10 +93,10 @@ public class Good$impl implements Good {
   }
 
   @Override
-  public void query(OptionalInt arg) {
+  public long query(OptionalInt arg) {
     var q = this.em.createNamedQuery("query");
     q.setParameter(1, Util.orElseNull(arg));
-    q.executeUpdate();
+    return q.executeUpdate();
   }
 
   @Override
@@ -106,12 +107,18 @@ public class Good$impl implements Good {
   }
 
   @Override
+  public List<MyEntity> listQuery() {
+    var q = this.em.createNamedQuery("listQuery");
+    return q.getResultList();
+  }
+
+  @Override
   @Transactional(
       rollbackOn = ExecutionException.class,
       value = Transactional.TxType.MANDATORY
   )
   public Stream<MyEntity> streamQuery() {
-    var q = this.em.createNamedQuery("query");
+    var q = this.em.createNamedQuery("streamQuery");
     return q.getResultStream();
   }
 

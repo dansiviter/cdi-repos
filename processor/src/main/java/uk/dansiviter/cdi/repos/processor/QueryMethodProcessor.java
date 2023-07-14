@@ -67,7 +67,7 @@ class QueryMethodProcessor implements SubProcessor<ExecutableElement> {
 
 		method.addStatement("var q = this.em.createNamedQuery($S)", query.value());
 
-		parameters(ctx, builder, e, method, query);
+		parameters(ctx, e, method, query);
 
 		if (isClass(ctx.env(), e.getReturnType(), Stream.class)) {
 			method.addStatement("return q.getResultStream()");
@@ -85,7 +85,7 @@ class QueryMethodProcessor implements SubProcessor<ExecutableElement> {
 		builder.addMethod(method.build());
 	}
 
-	private static void parameters(Context ctx, Builder builder, ExecutableElement e, MethodSpec.Builder method, Query query) {
+	private static void parameters(Context ctx, ExecutableElement e, MethodSpec.Builder method, Query query) {
 		var paramCount = new AtomicInteger();
 		for (var p : e.getParameters()) {
 			method.addParameter(TypeName.get(p.asType()), p.getSimpleName().toString());
