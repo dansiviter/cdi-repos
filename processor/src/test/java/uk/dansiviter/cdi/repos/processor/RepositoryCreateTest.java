@@ -16,7 +16,6 @@
 package uk.dansiviter.cdi.repos.processor;
 
 import java.lang.reflect.InvocationTargetException;
-import java.time.LocalDate;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
@@ -54,9 +53,13 @@ class RepositoryCreateTest {
 
 		void persist(MyEntity key);
 
+		MyEntity persistAndFlush(MyEntity key);
+
 		void merge(MyEntity key);
 
-		void save(MyEntity entity);
+		MyEntity save(MyEntity entity);
+
+		void saveAndFlush(MyEntity entity);
 
 		void delete(MyEntity entity);
 

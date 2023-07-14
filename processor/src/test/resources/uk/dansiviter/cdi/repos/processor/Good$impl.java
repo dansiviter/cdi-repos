@@ -1,13 +1,15 @@
 package uk.dansiviter.cdi.repos.processor;
 
-import static jakarta.persistence.PersistenceContextType.EXTENDED;
-
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.PersistenceContextType;
+import jakarta.transaction.Transactional;
 import java.lang.Override;
+import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 import javax.annotation.processing.Generated;
 import uk.dansiviter.cdi.repos.Util;
@@ -20,7 +22,8 @@ import uk.dansiviter.cdi.repos.Util;
 @ApplicationScoped
 public class Good$impl implements Good {
   @PersistenceContext(
-      type = EXTENDED
+      type = PersistenceContextType.EXTENDED,
+      unitName = "foo"
   )
   private EntityManager em;
 
@@ -30,18 +33,47 @@ public class Good$impl implements Good {
   }
 
   @Override
-  public void persist(MyEntity key) {
-    this.em.persist(key);
+  public MyEntity persist(MyEntity entity) {
+    this.em.persist(entity);
+    return entity;
   }
 
   @Override
-  public void merge(MyEntity key) {
-    this.em.merge(key);
+  public void persistAndFlush(MyEntity entity) {
+    try {
+      this.em.persist(entity);
+    } finally {
+      this.em.flush();
+    }
+  }
+
+  @Override
+  public void merge(MyEntity entity) {
+    this.em.merge(entity);
+  }
+
+  @Override
+  public void mergeAndFlush(MyEntity entity) {
+    try {
+      this.em.merge(entity);
+    } finally {
+      this.em.flush();
+    }
   }
 
   @Override
   public void save(MyEntity entity) {
     Util.save(entity, this.em);
+  }
+
+  @Override
+  @Transactional
+  public MyEntity saveAndFlush(MyEntity entity) {
+    try {
+      return Util.save(entity, this.em);
+    } finally {
+      this.em.flush();
+    }
   }
 
   @Override
@@ -61,22 +93,32 @@ public class Good$impl implements Good {
   }
 
   @Override
-  public void query(OptionalInt arg) {
+  public long query(OptionalInt arg) {
     var q = this.em.createNamedQuery("query");
-    q.setParameter(1, Util.unwrap(arg));
-    q.executeUpdate();
+    q.setParameter(1, Util.orElseNull(arg));
+    return q.executeUpdate();
   }
 
   @Override
   public int namedParametersQuery(int arg) {
     var q = this.em.createNamedQuery("query");
-    q.setParameter("arg", Util.unwrap(arg));
+    q.setParameter("arg", arg);
     return q.executeUpdate();
   }
 
   @Override
+  public List<MyEntity> listQuery() {
+    var q = this.em.createNamedQuery("listQuery");
+    return q.getResultList();
+  }
+
+  @Override
+  @Transactional(
+      rollbackOn = ExecutionException.class,
+      value = Transactional.TxType.MANDATORY
+  )
   public Stream<MyEntity> streamQuery() {
-    var q = this.em.createNamedQuery("query");
+    var q = this.em.createNamedQuery("streamQuery");
     return q.getResultStream();
   }
 

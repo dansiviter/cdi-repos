@@ -15,13 +15,12 @@
  */
 package uk.dansiviter.cdi.repos.processor;
 
-import static uk.dansiviter.cdi.repos.processor.ProcessorUtil.*;
-
 import static javax.lang.model.element.Modifier.PUBLIC;
+import static javax.lang.model.type.TypeKind.DECLARED;
 import static javax.tools.Diagnostic.Kind.ERROR;
+import static uk.dansiviter.cdi.repos.processor.ProcessorUtil.isClass;
 
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.type.TypeKind;
 
 import jakarta.persistence.EntityManager;
 
@@ -29,13 +28,15 @@ import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec.Builder;
 
+import uk.dansiviter.cdi.repos.processor.RepositoryProcessor.SubProcessor;
+
 /**
  * Processes {@link EntityManager} methods.
  */
-public class EntityManagerMethodProcessor implements SubProcessor<ExecutableElement> {
+class EntityManagerMethodProcessor implements SubProcessor<ExecutableElement> {
 	@Override
-	public void process(ProcessorContext ctx, Builder builder, ExecutableElement e) {
-		if (e.getReturnType().getKind() != TypeKind.DECLARED
+	public void process(Context ctx, Builder builder, ExecutableElement e) {
+		if (e.getReturnType().getKind() != DECLARED
 				|| !isClass(ctx.env(), e.getReturnType(), EntityManager.class))
 		{
 			return;

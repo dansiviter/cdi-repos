@@ -11,8 +11,9 @@ This library is for auto-generating repositories somewhat similar to Spring and 
 This uses [Annotation Processing](https://docs.oracle.com/en/java/javase/11/docs/api/java.compiler/javax/annotation/processing/package-summary.html) to generate an implementation that creates many useful commonly used methods.
 
 
-Lets get started... first import dependencies:
+Lets get started... first import dependencies...
 
+Maven:
 ```xml
 <dependency>
   <groupId>uk.dansiviter.cdi-repos</groupId>
@@ -28,42 +29,90 @@ Lets get started... first import dependencies:
 </dependency>
 ```
 
+Gradle:
+```
+annotationProcessor('uk.dansiviter.cdi-repos:cdi-repos-processor:${cdi-repos.version}')
+implementation('uk.dansiviter.cdi-repos:cdi-repos:${cdi-repos.version}')
+```
+
 Define a logger interface:
 ```java
-@Repository  // used to trigger annotation processing
-@PersistenceContext(unitName = "myUnit")  // defaults to 'default' for persistence context if not defined
+/**
+ * Trigger annotation processing by using @Repository. If no PersistenceContext is defined it will use a default value.
+ */
+@Repository
+@PersistenceContext(unitName = "myUnit")
 public interface MyRepo {
-  Optional<MyEntity> find(int id);  // delegates to EntityManager methods such as #find(...) optionals supported
+  // methods will go here
+}
+```
 
-  void save(MyEntity myEntity);  // will attempt to check if entity exits and either persist(...) or merge(...)
+This will then generate a `@ApplicationScoped` concrete implementation called `MyRepo$impl.java` which can then be inspected and debugged.
 
-  void flush();  // flush the persistence context
+> :information_source: This generator does not verify the types are correct for the queries therefore, be careful to correctly specify the correct types or there will be potentially compile and runtime exceptions. It's recommended you perform integration tests to verify these are setup correctly.
 
-  @Query(name = "myQuery")  // uses the 'myQuery' named query
-  List<MyEntity> myQuery(String param);  // defaults to positional parameters, unless specified in @Query
+There are several method types that can be used; first there are bridge methods. These typically 'bridge' between `EntityManager` methods but there are a few special cases:
+```java
+  /**
+   * This delegates to EntityManager#find(...) and has alternative #get(...), Optionals on return are supported.
+   */
+  @Transactional
+  Optional<MyEntity> find(int id);
 
-  @Query(name = "myQuery")
+  /**
+   * Special case: if this has a key this will delegate to EntityManager#merge(...), if not
+   * EntityManager#persist(...).
+   */
+  void save(MyEntity myEntity);
+
+  /**
+   * Same as above but will wrapped with a EntityManager#flush(). Returning the entity is supported as is
+   * @Transactional on all bridge methods.
+   */
+  @Transactional
+  MyEntity saveAndFlush(MyEntity myEntity);
+```
+
+Then there are query methods:
+```java
+  /**
+   * This uses the 'myQuery' named or named native query. It defaults to positional parameters. Optionals
+   * will use null if empty.
+   */
+  @Query("myQuery")
+  List<MyEntity> myQuery(String param0, OptionalInt param1, @Temporal(TemporalType.TIMESTAMP) Calendar param2);
+
+  /**
+   * This will use the parameter name for the named parameters. Stream results are supported.
+   */
+  @Query(value = "myQuery", namedParameters = true)
   Stream<MyEntity> myQueryStream(String param);  // Streams are supported
 
-  @Query(name = "myNativeQuery", nativeQuery = true)
-  List<MyEntity> myNativeQuery(String param);  // Native queries supported
-
-  @Query(name = "myQuery")
-  List<MyEntity> myQuery(OptionalInt param);  // Optionals will resolve to null if empty
-
+  /**
+   * If a void, int or long is used then it will use Query#executeUpdate and return the result if possible.
+   * @Transactional is supported on all query methods.
+   */
   @Query(name = "myUpdateQuery")
+  @Transactional
   int myUpdateQuery(String param);  // if update or delete return number of entities updated or deleted
+```
 
-  EntityManager entityManager();  // expose underlying EntityManager
+Finally, there is custom usage of `EntityManager`:
 
-  default int customQuery() {  // using above EntityManager for custom usage
+```java
+  /**
+   * Expose the EntityManager to be used in the default method. This could be named anything as long as it returns
+   * EntityManager.
+   */
+  EntityManager entityManager();
+
+  /**
+   * Then use it...
+   */
+  @Transactional
+  default int customQuery() {
     var em = entityManager();
     var q = em.getCriteriaQueryBuilder().createCriteriaDelete(MyEntity.class);
     return em.createQuery(q).executeUpdate();
   }
-}
 ```
-
-This will then generate a `@ApplicationScoped` concrete implementation called `MyRepo$impl.java` which can then be inspected.
-
-> **Note:** This generator does not verify the types are correct for the queries therefore, be careful to correctly specify the correct types or there will be runtime exceptions. It's recommended you perform integration tests to verify these are setup correctly.
