@@ -117,7 +117,7 @@ public class RepositoryProcessor extends AbstractProcessor {
 						.build())
 				.addSuperinterface(typeMirror);
 
-		var ctx = new ProcessorContext(this, type, typeBuilder);
+		var ctx = new Context(this, type, typeBuilder);
 
 		processPersistenceContext(ctx, typeBuilder, type);
 
@@ -125,7 +125,7 @@ public class RepositoryProcessor extends AbstractProcessor {
 
 		var javaFile = JavaFile.builder(pkg.getQualifiedName().toString(), typeBuilder.build());
 
-		ctx.fileDecorators.forEach(d -> d.accept(javaFile));
+		ctx.fileDecorators().forEach(d -> d.accept(javaFile));
 
 		try {
 			javaFile.build().writeTo(processingEnv.getFiler());
@@ -134,7 +134,7 @@ public class RepositoryProcessor extends AbstractProcessor {
 		}
 	}
 
-	private void processPersistenceContext(ProcessorContext ctx, TypeSpec.Builder builder, TypeElement type) {
+	private void processPersistenceContext(Context ctx, TypeSpec.Builder builder, TypeElement type) {
 		var persistenceCtx = type.getAnnotation(PersistenceContext.class);
 		var annotation = persistenceCtx != null ?
 			AnnotationSpec.get(persistenceCtx) : AnnotationSpec.builder(PersistenceContext.class).build();
@@ -144,7 +144,7 @@ public class RepositoryProcessor extends AbstractProcessor {
 				.addAnnotation(annotation).build());
 	}
 
-	private static Stream<? extends ExecutableElement> methods(ProcessorContext ctx, TypeElement type) {
+	private static Stream<? extends ExecutableElement> methods(Context ctx, TypeElement type) {
 		var methods = type.getEnclosedElements().stream()
 				.filter(e -> e.getKind() == ElementKind.METHOD)
 				.map(ExecutableElement.class::cast)
@@ -159,6 +159,6 @@ public class RepositoryProcessor extends AbstractProcessor {
 	}
 
 	interface SubProcessor<E extends Element> {
-		void process(ProcessorContext ctx, TypeSpec.Builder builder, E element);
+		void process(Context ctx, TypeSpec.Builder builder, E element);
 	}
 }

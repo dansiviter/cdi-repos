@@ -23,11 +23,17 @@ import static uk.dansiviter.cdi.repos.processor.ProcessorUtil.addTransactional;
 import static uk.dansiviter.cdi.repos.processor.ProcessorUtil.isClass;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.OptionalDouble;
+import java.util.OptionalInt;
+import java.util.OptionalLong;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 
+import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec.Builder;
@@ -42,7 +48,7 @@ import uk.dansiviter.cdi.repos.processor.RepositoryProcessor.SubProcessor;
  */
 class QueryMethodProcessor implements SubProcessor<ExecutableElement> {
 	@Override
-	public void process(ProcessorContext ctx, Builder builder, ExecutableElement e) {
+	public void process(Context ctx, Builder builder, ExecutableElement e) {
 		var query = e.getAnnotation(Query.class);
 		if (query == null) {
 			return;
@@ -79,26 +85,37 @@ class QueryMethodProcessor implements SubProcessor<ExecutableElement> {
 		builder.addMethod(method.build());
 	}
 
-	private static void parameters(ProcessorContext ctx, Builder builder, ExecutableElement e, MethodSpec.Builder method, Query query) {
-		for (int i = 0; i < e.getParameters().size(); i++) {
-			var p = e.getParameters().get(i);
+	private static void parameters(Context ctx, Builder builder, ExecutableElement e, MethodSpec.Builder method, Query query) {
+		var paramCount = new AtomicInteger();
+		for (var p : e.getParameters()) {
 			method.addParameter(TypeName.get(p.asType()), p.getSimpleName().toString());
-			var temporal = p.getAnnotation(Temporal.class);
+
+			var codeBlock = CodeBlock.builder().add("q.setParameter(");
+
 			if (query.namedParameters()) {
-				if (temporal != null) {
-					method.addStatement("q.setParameter($S, $T.unwrap($L), $L)", p.getSimpleName(), Util.class, p, temporal.value());
-					ctx.fileDecorators.add(f -> f.addStaticImport(temporal.value()));
-				} else {
-					method.addStatement("q.setParameter($S, $T.unwrap($L))", p.getSimpleName(), Util.class, p);
-				}
+				codeBlock.add("$S, ", p.getSimpleName());
 			} else {
-				if (temporal != null) {
-					method.addStatement("q.setParameter($L, $T.unwrap($L), $L)", i + 1, Util.class, p, temporal.value());
-					ctx.fileDecorators.add(f -> f.addStaticImport(temporal.value()));
-				} else {
-					method.addStatement("q.setParameter($L, $T.unwrap($L))", i + 1, Util.class, p);
-				}
+				codeBlock.add("$L, ", paramCount.incrementAndGet());
 			}
+
+			if (isClass(ctx.env(), p.asType(), Optional.class)) {
+				codeBlock.add("$L.orElse(null)", p);
+			} else if (isClass(ctx.env(), p.asType(), OptionalInt.class) ||
+				isClass(ctx.env(), p.asType(), OptionalLong.class) ||
+				isClass(ctx.env(), p.asType(), OptionalDouble.class)) {
+				codeBlock.add("$T.orElseNull($L)", Util.class, p);
+			} else {
+				codeBlock.add("$L", p);
+			}
+
+			var temporal = p.getAnnotation(Temporal.class);
+			if (temporal != null) {
+				codeBlock.add(", $L)", temporal.value());
+				ctx.fileDecorators().add(f -> f.addStaticImport(temporal.value()));
+			} else {
+				codeBlock.add(")");
+			}
+			method.addStatement(codeBlock.build());
 		}
 	}
 }

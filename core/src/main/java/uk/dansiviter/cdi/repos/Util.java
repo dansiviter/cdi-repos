@@ -15,11 +15,9 @@
  */
 package uk.dansiviter.cdi.repos;
 
-import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
-import java.util.function.Supplier;
 
 import jakarta.persistence.EntityManager;
 
@@ -66,29 +64,32 @@ public enum Util { ;
 	}
 
 	/**
-	 * Horrible method that helps unwraps the underlying value.
+	 * Horrible convenience method to unwrap the value.
 	 *
-	 * @param <T> the type to return.
-	 * @param value the value to unwrap.
-	 * @return the unwrapped value.
+	 * @param optional
+	 * @return
 	 */
-	@SuppressWarnings("unchecked")
-	public static <T> T unwrap(T value) {
-		if (value instanceof Optional) {
-			return ((Optional<T>) value).orElse(null);
-		}
-		if (value instanceof OptionalInt oi) {
-			return (T) (oi.isPresent() ? oi.getAsInt() : null);
-		}
-		if (value instanceof OptionalLong ol) {
-			return (T) (ol.isPresent() ? ol.getAsLong() : null);
-		}
-		if (value instanceof OptionalDouble od) {
-			return (T) (od.isPresent() ? od.getAsDouble() : null);
-		}
-		if (value instanceof Supplier s) {
-			return (T) s.get();
-		}
-		return (T) value;
+	public static Integer orElseNull(OptionalInt opt) {
+		return opt.isPresent() ? Integer.valueOf(opt.getAsInt()) : null;
+	}
+
+	/**
+	 * Horrible convenience method to unwrap the value.
+	 *
+	 * @param optional
+	 * @return
+	 */
+	public static Long orElseNull(OptionalLong opt) {
+		return opt.isPresent() ? Long.valueOf(opt.getAsLong()) : null;
+	}
+
+	/**
+	 * Horrible convenience method to unwrap the value.
+	 *
+	 * @param optional
+	 * @return
+	 */
+	public static Double orElseNull(OptionalDouble opt) {
+		return opt.isPresent() ? Double.valueOf(opt.getAsDouble()) : null;
 	}
 }

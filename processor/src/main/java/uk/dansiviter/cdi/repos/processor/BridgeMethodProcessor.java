@@ -58,7 +58,7 @@ class BridgeMethodProcessor implements SubProcessor<ExecutableElement> {
 		SAVE_METHOD, BridgeMethodProcessor::processSave);
 
 	@Override
-	public void process(ProcessorContext ctx, Builder builder, ExecutableElement e) {
+	public void process(Context ctx, Builder builder, ExecutableElement e) {
 		var method = MethodSpec.methodBuilder(e.getSimpleName().toString())
 				.addAnnotation(Override.class)
 				.addModifiers(PUBLIC)
@@ -77,7 +77,7 @@ class BridgeMethodProcessor implements SubProcessor<ExecutableElement> {
 		}
 	}
 
-	private static void processFind(Matcher matcher, ProcessorContext ctx, MethodSpec.Builder method, ExecutableElement e) {
+	private static void processFind(Matcher matcher, Context ctx, MethodSpec.Builder method, ExecutableElement e) {
 		verifyParamCount(ctx, 1, e);
 
 		var declared = (DeclaredType) e.getReturnType();
@@ -89,7 +89,7 @@ class BridgeMethodProcessor implements SubProcessor<ExecutableElement> {
 		}
 	}
 
-	private static void processPersist(Matcher matcher, ProcessorContext ctx, MethodSpec.Builder method, ExecutableElement e) {
+	private static void processPersist(Matcher matcher, Context ctx, MethodSpec.Builder method, ExecutableElement e) {
 		verifyParamCount(ctx, 1, e);
 
 		wrapFlush(matcher.group(1) != null, method, () -> {
@@ -102,7 +102,7 @@ class BridgeMethodProcessor implements SubProcessor<ExecutableElement> {
 		});
 	}
 
-	private static void processMerge(Matcher matcher, ProcessorContext ctx, MethodSpec.Builder method, ExecutableElement e) {
+	private static void processMerge(Matcher matcher, Context ctx, MethodSpec.Builder method, ExecutableElement e) {
 		verifyParamCount(ctx, 1, e);
 
 		wrapFlush(matcher.group(1) != null, method, () -> {
@@ -111,7 +111,7 @@ class BridgeMethodProcessor implements SubProcessor<ExecutableElement> {
 		});
 	}
 
-	private static void processRemove(Matcher matcher, ProcessorContext ctx, MethodSpec.Builder method, ExecutableElement e) {
+	private static void processRemove(Matcher matcher, Context ctx, MethodSpec.Builder method, ExecutableElement e) {
 		verifyParamCount(ctx, 1, e);
 
 		wrapFlush(matcher.group(1) != null, method, () -> {
@@ -119,11 +119,11 @@ class BridgeMethodProcessor implements SubProcessor<ExecutableElement> {
 		});
 	}
 
-	private static void processFlush(Matcher matcher, ProcessorContext ctx, MethodSpec.Builder method, ExecutableElement e) {
+	private static void processFlush(Matcher matcher, Context ctx, MethodSpec.Builder method, ExecutableElement e) {
 		method.addStatement("this.em.flush()");
 	}
 
-	private static void processSave(Matcher matcher, ProcessorContext ctx, MethodSpec.Builder method, ExecutableElement e) {
+	private static void processSave(Matcher matcher, Context ctx, MethodSpec.Builder method, ExecutableElement e) {
 		verifyParamCount(ctx, 1, e);
 
 		wrapFlush(matcher.group(1) != null, method, () -> {
@@ -132,7 +132,7 @@ class BridgeMethodProcessor implements SubProcessor<ExecutableElement> {
 		});
 	}
 
-	private static void verifyParamCount(ProcessorContext ctx, int params, ExecutableElement e) {
+	private static void verifyParamCount(Context ctx, int params, ExecutableElement e) {
 		if (e.getParameters().size() != params) {
 			ctx.env().getMessager().printMessage(ERROR, String.format("Only %d params supported", params), e);
 		}
@@ -152,6 +152,6 @@ class BridgeMethodProcessor implements SubProcessor<ExecutableElement> {
 
 	@FunctionalInterface
 	private interface MethodProcessor {
-		void process(Matcher matcher, ProcessorContext ctx, MethodSpec.Builder method, ExecutableElement e);
+		void process(Matcher matcher, Context ctx, MethodSpec.Builder method, ExecutableElement e);
 	}
 }

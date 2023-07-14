@@ -35,7 +35,7 @@ import uk.dansiviter.cdi.repos.processor.RepositoryProcessor.SubProcessor;
  */
 class EntityManagerMethodProcessor implements SubProcessor<ExecutableElement> {
 	@Override
-	public void process(ProcessorContext ctx, Builder builder, ExecutableElement e) {
+	public void process(Context ctx, Builder builder, ExecutableElement e) {
 		if (e.getReturnType().getKind() != DECLARED
 				|| !isClass(ctx.env(), e.getReturnType(), EntityManager.class))
 		{

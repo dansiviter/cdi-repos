@@ -21,7 +21,8 @@ import uk.dansiviter.cdi.repos.Util;
 @ApplicationScoped
 public class Good$impl implements Good {
   @PersistenceContext(
-      type = PersistenceContextType.EXTENDED
+      type = PersistenceContextType.EXTENDED,
+      unitName = "foo"
   )
   private EntityManager em;
 
@@ -93,20 +94,21 @@ public class Good$impl implements Good {
   @Override
   public void query(OptionalInt arg) {
     var q = this.em.createNamedQuery("query");
-    q.setParameter(1, Util.unwrap(arg));
+    q.setParameter(1, Util.orElseNull(arg));
     q.executeUpdate();
   }
 
   @Override
   public int namedParametersQuery(int arg) {
     var q = this.em.createNamedQuery("query");
-    q.setParameter("arg", Util.unwrap(arg));
+    q.setParameter("arg", arg);
     return q.executeUpdate();
   }
 
   @Override
   @Transactional(
-      rollbackOn = ExecutionException.class
+      rollbackOn = ExecutionException.class,
+      value = Transactional.TxType.MANDATORY
   )
   public Stream<MyEntity> streamQuery() {
     var q = this.em.createNamedQuery("query");

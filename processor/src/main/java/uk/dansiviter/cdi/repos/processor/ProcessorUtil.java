@@ -125,34 +125,34 @@ enum ProcessorUtil { ;
 	 * @see com.squareup.javapoet.AnnotationSpec#addMemberForValue(String, Object)
 	 */
 	static void addMemberForValue(AnnotationSpec.Builder builder, String memberName, Object value) {
-      if (value instanceof Class<?> || value instanceof TypeMirror) {
-        builder.addMember(memberName, "$T.class", value);
-      } else if (value instanceof Enum e) {
-        builder.addMember(memberName, "$T.$L", value.getClass(), e.name());
-      } else if (value instanceof String s) {
-        builder.addMember(memberName, "$S", s);
-      } else if (value instanceof Float f) {
-        builder.addMember(memberName, "$Lf", f);
-      } else if (value instanceof Character c) {
-        builder.addMember(memberName, "'$L'", characterLiteralWithoutSingleQuotes(c));
-			} else {
-      	builder.addMember(memberName, "$L", value);
-			}
-    }
-
-		static String characterLiteralWithoutSingleQuotes(char c) {
-			// see https://docs.oracle.com/javase/specs/jls/se7/html/jls-3.html#jls-3.10.6
-			switch (c) {
-				case '\b': return "\\b"; /* \u0008: backspace (BS) */
-				case '\t': return "\\t"; /* \u0009: horizontal tab (HT) */
-				case '\n': return "\\n"; /* \u000a: linefeed (LF) */
-				case '\f': return "\\f"; /* \u000c: form feed (FF) */
-				case '\r': return "\\r"; /* \u000d: carriage return (CR) */
-				case '\"': return "\"";  /* \u0022: double quote (") */
-				case '\'': return "\\'"; /* \u0027: single quote (') */
-				case '\\': return "\\\\";  /* \u005c: backslash (\) */
-				default:
-					return Character.isISOControl(c) ? String.format("\\u%04x", (int) c) : Character.toString(c);
-			}
+		if (value instanceof Class<?> || value instanceof TypeMirror) {
+			builder.addMember(memberName, "$T.class", value);
+		} else if (value instanceof Enum e) {
+			builder.addMember(memberName, "$T.$L", value.getClass(), e.name());
+		} else if (value instanceof String s) {
+			builder.addMember(memberName, "$S", s);
+		} else if (value instanceof Float f) {
+			builder.addMember(memberName, "$Lf", f);
+		} else if (value instanceof Character c) {
+			builder.addMember(memberName, "'$L'", characterLiteralWithoutSingleQuotes(c));
+		} else {
+			builder.addMember(memberName, "$L", value);
 		}
+	}
+
+	static String characterLiteralWithoutSingleQuotes(char c) {
+		// see https://docs.oracle.com/javase/specs/jls/se7/html/jls-3.html#jls-3.10.6
+		switch (c) {
+			case '\b': return "\\b"; /* \u0008: backspace (BS) */
+			case '\t': return "\\t"; /* \u0009: horizontal tab (HT) */
+			case '\n': return "\\n"; /* \u000a: linefeed (LF) */
+			case '\f': return "\\f"; /* \u000c: form feed (FF) */
+			case '\r': return "\\r"; /* \u000d: carriage return (CR) */
+			case '\"': return "\"";  /* \u0022: double quote (") */
+			case '\'': return "\\'"; /* \u0027: single quote (') */
+			case '\\': return "\\\\";  /* \u005c: backslash (\) */
+			default:
+				return Character.isISOControl(c) ? String.format("\\u%04x", (int) c) : Character.toString(c);
+		}
+	}
 }

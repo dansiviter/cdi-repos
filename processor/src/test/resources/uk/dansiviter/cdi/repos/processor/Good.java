@@ -11,6 +11,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.PersistenceContextType;
 import jakarta.transaction.Transactional;
+import jakarta.transaction.Transactional.TxType;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,7 +21,7 @@ import uk.dansiviter.cdi.repos.annotations.Query;
 import uk.dansiviter.cdi.repos.annotations.Repository;
 
 @Repository
-@PersistenceContext(type = PersistenceContextType.EXTENDED)
+@PersistenceContext(unitName = "foo", type = PersistenceContextType.EXTENDED)
 interface Good {
 	Optional<MyEntity> find(int key);
 
@@ -51,7 +52,7 @@ interface Good {
 	int namedParametersQuery(int arg);
 
 	@Query(value = "query")
-	@Transactional(rollbackOn = ExecutionException.class)
+	@Transactional(value = TxType.MANDATORY, rollbackOn = ExecutionException.class)
 	Stream<MyEntity> streamQuery();
 
 	EntityManager em();

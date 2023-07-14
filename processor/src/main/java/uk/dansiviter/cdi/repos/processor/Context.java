@@ -28,16 +28,15 @@ import com.squareup.javapoet.TypeSpec;
 /**
  * Defines a processing context.
  */
-class ProcessorContext {
-	final RepositoryProcessor parent;
-	final TypeElement rootType;
-	final TypeSpec.Builder builder;
-	final List<Consumer<JavaFile.Builder>> fileDecorators = new ArrayList<>();
+record Context(
+	RepositoryProcessor parent,
+	TypeElement rootType,
+	TypeSpec.Builder builder,
+	List<Consumer<JavaFile.Builder>> fileDecorators)
+{
 
-	ProcessorContext(RepositoryProcessor parent, TypeElement rootType, TypeSpec.Builder builder) {
-		this.parent = parent;
-		this.rootType = rootType;
-		this.builder = builder;
+	Context(RepositoryProcessor parent, TypeElement rootType, TypeSpec.Builder builder) {
+		this(parent, rootType, builder, new ArrayList<>());
 	}
 
 	ProcessingEnvironment env() {
