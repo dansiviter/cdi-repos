@@ -15,18 +15,27 @@
  */
 package uk.dansiviter.cdi.repos.processor;
 
-import java.lang.reflect.InvocationTargetException;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.stream.Stream;
 
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TemporalType;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import uk.dansiviter.cdi.repos.annotations.Query;
@@ -38,11 +47,48 @@ import uk.dansiviter.cdi.repos.annotations.Temporal;
  */
 @ExtendWith(MockitoExtension.class)
 class RepositoryCreateTest {
+	@Mock
+	EntityManager em;
+
+	Class<?> repoCls;
+	MyRepo repo;
+
+	@BeforeEach
+	void before() throws ReflectiveOperationException {
+		repoCls = Class.forName(MyRepo.class.getName() + "$impl");
+		repo = (MyRepo) repoCls.getDeclaredConstructor().newInstance();
+
+		var emField = repoCls.getDeclaredField("em");
+		emField.trySetAccessible();
+		emField.set(repo, em);
+	}
+
 	@Test
-	void classCreated() throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException, ClassNotFoundException {
-		Class.forName(MyRepo.class.getName() + "$impl")
-			.getDeclaredConstructor()
-			.newInstance();
+	void classFixtures() throws ReflectiveOperationException {
+		assertTrue(repoCls.isAnnotationPresent(ApplicationScoped.class));
+		assertTrue(repoCls.getDeclaredField("em").isAnnotationPresent(PersistenceContext.class));
+	}
+
+	@Test
+	void find() {
+		var result = repo.find(123);
+
+		assertFalse(result.isPresent());
+
+		verify(this.em).find(RepositoryCreateTest.MyEntity.class, 123);
+	}
+
+	@Test
+	void namedParametersQuery(@Mock jakarta.persistence.Query query) {
+		when(em.createNamedQuery(any())).thenReturn(query);
+		when(query.getResultList()).thenReturn(List.of());
+
+		var result = repo.namedParametersQuery(123);
+		assertTrue(result.isEmpty());
+
+		verify(this.em).createNamedQuery("namedParametersQuery");
+    verify(query).setParameter("integer", 123);
+    verify(query).getResultList();
 	}
 
 
@@ -76,9 +122,6 @@ class RepositoryCreateTest {
 
 		@Query("query")
 		List<MyEntity> query(OptionalInt arg);
-
-		// @Query(name = "storedProcedure", storedProcedure = true)
-		// List<MyEntity> storedProcedure(int arg);
 
 		@Query(value = "namedParametersQuery", namedParameters = true)
 		List<MyEntity> namedParametersQuery(int integer);
