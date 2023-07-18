@@ -22,7 +22,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 /**
- * Designates the class as a logger wrapper.
+ * Designates the class as a repository.
  * <p>
  * Usage:
  * <pre>

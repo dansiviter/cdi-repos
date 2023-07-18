@@ -43,8 +43,7 @@ class RepositoryProcessorTest {
 	}
 
 	@Test
-	void process_bad()
-	{
+	void process_bad() {
 		Compilation compilation =
      javac()
          .withProcessors(new RepositoryProcessor())

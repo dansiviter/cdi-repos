@@ -41,6 +41,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
+import javax.tools.Diagnostic.Kind;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
@@ -85,9 +86,17 @@ public class RepositoryProcessor extends AbstractProcessor {
 	}
 
 	private void process(TypeElement element) {
+		var className = className(processingEnv, element);
+		if (element.getKind() != ElementKind.INTERFACE) {
+			processingEnv.getMessager().printMessage(
+					Kind.ERROR,
+					format("Not interface type: %s", className),
+					element);
+			return;
+		}
+
 		var pkg = this.processingEnv.getElementUtils().getPackageOf(element);
 		var type = element.asType();
-		var className = className(processingEnv, element);
 		var concreteName = className.substring(className.lastIndexOf('.') + 1).concat("$impl");
 		createConcrete(className, element, type, concreteName, pkg);
 	}

@@ -108,7 +108,7 @@ public class Good$impl implements Good {
 
   @Override
   public List<MyEntity> listQuery() {
-    var q = this.em.createNamedQuery("listQuery");
+    var q = this.em.createNamedQuery("listQuery", MyEntity.class);
     return q.getResultList();
   }
 
@@ -118,8 +118,14 @@ public class Good$impl implements Good {
       value = Transactional.TxType.MANDATORY
   )
   public Stream<MyEntity> streamQuery() {
-    var q = this.em.createNamedQuery("streamQuery");
+    var q = this.em.createNamedQuery("streamQuery", MyEntity.class);
     return q.getResultStream();
+  }
+
+  @Override
+  public Optional<MyEntity> singleResultQuery() {
+    var q = this.em.createNamedQuery("singleResultQuery", MyEntity.class);
+    return Util.singleResult(q.getResultStream());
   }
 
   @Override

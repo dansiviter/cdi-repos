@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -13,9 +14,11 @@ import static org.mockito.Mockito.when;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
+import java.util.stream.Stream;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.NonUniqueResultException;
 import jakarta.persistence.PersistenceUnitUtil;
 
 import org.junit.jupiter.api.Test;
@@ -145,6 +148,29 @@ class UtilTest {
 
 		var optionalEmptyResult = Util.orElseNull(optionalEmpty);
 		assertNull(optionalEmptyResult);
+	}
+
+	@Test
+	void singleResult() {
+		var result = Util.singleResult(Stream.of("foo"));
+
+		assertEquals("foo", result.get());
+	}
+
+	@Test
+	void singleResult_empty() {
+		var result = Util.singleResult(Stream.of());
+
+		assertTrue(result.isEmpty());
+	}
+
+	@Test
+	void singleResult_moreThanOne() {
+		var result = assertThrows(
+			NonUniqueResultException.class,
+			() -> Util.singleResult(Stream.of("foo", "bar")));
+
+		assertEquals("More than one result", result.getMessage());
 	}
 
 	record MyEntity(Object key) { }
