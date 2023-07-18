@@ -15,6 +15,7 @@
  */
 package uk.dansiviter.cdi.repos;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
@@ -105,6 +106,8 @@ public enum Util { ;
 	 * @throws IllegalStateException if there is more than one result in the stream.
 	 */
 	public static <T> Optional<T> singleResult(Stream<T> stream) {
-		return stream.reduce((t, u) -> { throw new NonUniqueResultException("More than one result"); });
+		return stream
+			.filter(Objects::nonNull)
+			.reduce((t, u) -> { throw new NonUniqueResultException("More than one result"); });
 	}
 }
