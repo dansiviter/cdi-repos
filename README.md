@@ -35,7 +35,7 @@ annotationProcessor('uk.dansiviter.cdi-repos:cdi-repos-processor:${cdi-repos.ver
 implementation('uk.dansiviter.cdi-repos:cdi-repos:${cdi-repos.version}')
 ```
 
-Define a logger interface:
+Define a repository interface:
 ```java
 /**
  * Trigger annotation processing by using @Repository. If no PersistenceContext is defined it will use a default value.
@@ -73,6 +73,8 @@ There are several method types that can be used; first there are bridge methods.
   MyEntity saveAndFlush(MyEntity myEntity);
 ```
 
+> :information_source: Methods like `#findAll` and `#deleteAll` are purposefully not automatically generated for memory and data loss reasons. If you wish to do this, use the `default` method mechanism.
+
 Then there are query methods:
 ```java
   /**
@@ -85,16 +87,22 @@ Then there are query methods:
   /**
    * This will use the parameter name for the named parameters. Stream results are supported.
    */
-  @Query(value = "myQuery", namedParameters = true)
-  Stream<MyEntity> myQueryStream(String param);  // Streams are supported
+  @Query(value = "myQueryStream", namedParameters = true)
+  Stream<MyEntity> myQueryStream(String queryParam);
+
+  /**
+   * You can expect zero or one result. If more than one result is returned NonUniqueResultException will be thrown.
+   */
+  @Query("mySingleResultQuery")
+  Optional<MyEntity> mySingleResultQuery(String param);
 
   /**
    * If a void, int or long is used then it will use Query#executeUpdate and return the result if possible.
    * @Transactional is supported on all query methods.
    */
-  @Query(name = "myUpdateQuery")
+  @Query("myUpdateQuery")
   @Transactional
-  int myUpdateQuery(String param);  // if update or delete return number of entities updated or deleted
+  int myUpdateQuery(String param);
 ```
 
 Finally, there is custom usage of `EntityManager`:

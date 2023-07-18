@@ -15,11 +15,14 @@
  */
 package uk.dansiviter.cdi.repos;
 
+import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.OptionalLong;
+import java.util.stream.Stream;
 
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.NonUniqueResultException;
 
 /**
  * Utilities for use with generated repositories.
@@ -91,5 +94,17 @@ public enum Util { ;
 	 */
 	public static Double orElseNull(OptionalDouble opt) {
 		return opt.isPresent() ? Double.valueOf(opt.getAsDouble()) : null;
+	}
+
+	/**
+	 * Returns a single result from the stream. Useful when you expect only one result.
+	 *
+	 * @param <T> the object type.
+	 * @param stream the stream to use.
+	 * @return an optional result.
+	 * @throws IllegalStateException if there is more than one result in the stream.
+	 */
+	public static <T> Optional<T> singleResult(Stream<T> stream) {
+		return stream.reduce((t, u) -> { throw new NonUniqueResultException("More than one result"); });
 	}
 }

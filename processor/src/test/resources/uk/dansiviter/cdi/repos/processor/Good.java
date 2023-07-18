@@ -51,12 +51,15 @@ interface Good {
 	@Query(value = "query", namedParameters = true)
 	int namedParametersQuery(int arg);
 
-	@Query(value = "listQuery")
+	@Query("listQuery")
 	List<MyEntity> listQuery();
 
-	@Query(value = "streamQuery")
+	@Query("streamQuery")
 	@Transactional(value = TxType.MANDATORY, rollbackOn = ExecutionException.class)
 	Stream<MyEntity> streamQuery();
+
+	@Query("singleResultQuery")
+	Optional<MyEntity> singleResultQuery();
 
 	EntityManager em();
 

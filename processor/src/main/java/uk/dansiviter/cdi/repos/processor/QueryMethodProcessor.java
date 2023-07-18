@@ -32,6 +32,7 @@ import java.util.stream.Stream;
 
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.type.DeclaredType;
 
 import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.MethodSpec;
@@ -65,17 +66,29 @@ class QueryMethodProcessor implements SubProcessor<ExecutableElement> {
 				.returns(TypeName.get(e.getReturnType()));
 		addTransactional(method, e);
 
-		method.addStatement("var q = this.em.createNamedQuery($S)", query.value());
+		var returnType = e.getReturnType();
+
+		if (isClass(ctx.env(), returnType, Stream.class) ||
+				isClass(ctx.env(), returnType, List.class) ||
+				isClass(ctx.env(), returnType, Optional.class))
+		{
+			var dt = (DeclaredType) returnType;
+			method.addStatement("var q = this.em.createNamedQuery($S, $T.class)", query.value(), dt.getTypeArguments().get(0));
+		} else {
+			method.addStatement("var q = this.em.createNamedQuery($S)", query.value());
+		}
 
 		parameters(ctx, e, method, query);
 
-		if (isClass(ctx.env(), e.getReturnType(), Stream.class)) {
+		if (isClass(ctx.env(), returnType, Stream.class)) {
 			method.addStatement("return q.getResultStream()");
-		} else if (isClass(ctx.env(), e.getReturnType(), List.class)) {
+		} else if (isClass(ctx.env(), returnType, List.class)) {
 			method.addStatement("return q.getResultList()");
-		} else if (e.getReturnType().getKind() == INT || e.getReturnType().getKind() == LONG) {
+		} else if (isClass(ctx.env(), returnType, Optional.class)) {
+			method.addStatement("return $T.singleResult(q.getResultStream())", Util.class);
+		} else if (returnType.getKind() == INT || returnType.getKind() == LONG) {
 			method.addStatement("return q.executeUpdate()");
-		} else if (e.getReturnType().getKind() == VOID) {
+		} else if (returnType.getKind() == VOID) {
 			method.addStatement("q.executeUpdate()");
 		} else {
 			ctx.env().getMessager().printMessage(ERROR, "Unknown return type '" + e.getReturnType() + "'!", e);
