@@ -151,31 +151,121 @@ class UtilTest {
 	}
 
 	@Test
-	void singleResult() {
-		var result = Util.singleResult(Stream.of("foo"));
+	void toOptional() {
+		var result = Util.toOptional(Stream.of("foo"));
 
 		assertEquals("foo", result.get());
 	}
 
 	@Test
-	void singleResult_empty() {
-		var result = Util.singleResult(Stream.of());
+	void toOptional_empty() {
+		var result = Util.toOptional(Stream.of());
 
 		assertTrue(result.isEmpty());
 	}
 
 	@Test
-	void singleResult_null() {
-		var result = Util.singleResult(Stream.of((Object) null));
+	void toOptional_null() {
+		var result = Util.toOptional(Stream.of((Object) null));
 
 		assertTrue(result.isEmpty());
 	}
 
 	@Test
-	void singleResult_moreThanOne() {
+	void toOptional_moreThanOne() {
 		var result = assertThrows(
 			NonUniqueResultException.class,
-			() -> Util.singleResult(Stream.of("foo", "bar")));
+			() -> Util.toOptional(Stream.of("foo", "bar")));
+
+		assertEquals("More than one result", result.getMessage());
+	}
+
+	@Test
+	void toOptionalInt() {
+		var result = Util.toOptionalInt(Stream.of(123));
+
+		assertEquals(123, result.getAsInt());
+	}
+
+	@Test
+	void toOptionalInt_empty() {
+		var result = Util.toOptionalInt(Stream.of());
+
+		assertTrue(result.isEmpty());
+	}
+
+	@Test
+	void toOptionalInt_null() {
+		var result = Util.toOptionalInt(Stream.of((Number) null));
+
+		assertTrue(result.isEmpty());
+	}
+
+	@Test
+	void toOptionalInt_moreThanOne() {
+		var result = assertThrows(
+			NonUniqueResultException.class,
+			() -> Util.toOptionalInt(Stream.of(123, 456)));
+
+		assertEquals("More than one result", result.getMessage());
+	}
+
+	@Test
+	void toOptionalLong() {
+		var result = Util.toOptionalLong(Stream.of(123L));
+
+		assertEquals(123L, result.getAsLong());
+	}
+
+	@Test
+	void toOptionalLong_empty() {
+		var result = Util.toOptionalLong(Stream.of());
+
+		assertTrue(result.isEmpty());
+	}
+
+	@Test
+	void toOptionalLong_null() {
+		var result = Util.toOptionalLong(Stream.of((Number) null));
+
+		assertTrue(result.isEmpty());
+	}
+
+	@Test
+	void toOptionalLong_moreThanOne() {
+		var result = assertThrows(
+			NonUniqueResultException.class,
+			() -> Util.toOptionalLong(Stream.of(123L, 456L)));
+
+		assertEquals("More than one result", result.getMessage());
+	}
+
+	@Test
+	void toOptionalDouble() {
+		var result = Util.toOptionalDouble(Stream.of(1.23));
+
+		assertEquals(1.23, result.getAsDouble());
+	}
+
+	@Test
+	void toOptionalDouble_empty() {
+		var result = Util.toOptionalDouble(Stream.of());
+
+		assertTrue(result.isEmpty());
+	}
+
+	@Test
+	void toOptionalDouble_null() {
+		var result = Util.toOptionalDouble(Stream.of((Number) null));
+
+		assertTrue(result.isEmpty());
+	}
+
+	@Test
+	void toOptionalDouble_moreThanOne() {
+		var result = assertThrows(
+			NonUniqueResultException.class,
+			() -> Util.toOptionalDouble(Stream.of(1.23, 4.56)));
 
 		assertEquals("More than one result", result.getMessage());
 	}

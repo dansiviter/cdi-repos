@@ -3,7 +3,9 @@ package uk.dansiviter.cdi.repos.processor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalDouble;
 import java.util.OptionalInt;
+import java.util.OptionalLong;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
@@ -58,8 +60,17 @@ interface Good {
 	@Transactional(value = TxType.MANDATORY, rollbackOn = ExecutionException.class)
 	Stream<MyEntity> streamQuery();
 
-	@Query("singleResultQuery")
-	Optional<MyEntity> singleResultQuery();
+	@Query("singleQuery")
+	Optional<MyEntity> singleQuery();
+
+	@Query("singleIntQuery")
+	OptionalInt singleIntQuery();
+
+	@Query("singleLongQuery")
+	OptionalLong singleLongQuery();
+
+	@Query("singleDoubleQuery")
+	OptionalDouble singleDoubleQuery();
 
 	EntityManager em();
 

@@ -15,11 +15,9 @@
  */
 package uk.dansiviter.cdi.repos.processor;
 
-import static java.lang.String.format;
+import static javax.lang.model.SourceVersion.RELEASE_17;
 import static javax.lang.model.element.Modifier.PRIVATE;
 import static javax.lang.model.element.Modifier.PUBLIC;
-import static javax.tools.Diagnostic.Kind.ERROR;
-import static javax.tools.Diagnostic.Kind.NOTE;
 import static uk.dansiviter.cdi.repos.processor.ProcessorUtil.className;
 
 import java.io.IOException;
@@ -34,14 +32,11 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
-import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeMirror;
-import javax.tools.Diagnostic.Kind;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
@@ -58,7 +53,7 @@ import uk.dansiviter.cdi.repos.annotations.Repository;
  * Processes {@link Repository} annotations.
  */
 @SupportedAnnotationTypes("uk.dansiviter.cdi.repos.annotations.Repository")
-@SupportedSourceVersion(SourceVersion.RELEASE_11)
+@SupportedSourceVersion(RELEASE_17)
 public class RepositoryProcessor extends AbstractProcessor {
 	private static final Set<SubProcessor<ExecutableElement>> METHOD_PROCESSORS = Set.of(
 			new EntityManagerMethodProcessor(),
@@ -86,32 +81,27 @@ public class RepositoryProcessor extends AbstractProcessor {
 	}
 
 	private void process(TypeElement element) {
+		var ctx = new Context(this);
+
 		var className = className(processingEnv, element);
 		if (element.getKind() != ElementKind.INTERFACE) {
-			processingEnv.getMessager().printMessage(
-					Kind.ERROR,
-					format("Not interface type: %s", className),
-					element);
+			ctx.error(element, "Not interface type: %s", className);
 			return;
 		}
+		ctx.note(element, "Generating class for: %s", className);
 
 		var pkg = this.processingEnv.getElementUtils().getPackageOf(element);
-		var type = element.asType();
 		var concreteName = className.substring(className.lastIndexOf('.') + 1).concat("$impl");
-		createConcrete(className, element, type, concreteName, pkg);
+		createConcrete(ctx, className, element, concreteName, pkg);
 	}
 
 	private void createConcrete(
-			String className,
-			TypeElement type,
-			TypeMirror typeMirror,
-			String concreteName,
-			PackageElement pkg) {
-		processingEnv.getMessager().printMessage(
-				NOTE,
-				format("Generating class for: %s", className),
-				type);
-
+		Context ctx,
+		String className,
+		TypeElement type,
+		String concreteName,
+		PackageElement pkg)
+	{
 		var typeBuilder = TypeSpec.classBuilder(concreteName)
 				.addModifiers(PUBLIC)
 				.addAnnotation(AnnotationSpec
@@ -123,9 +113,7 @@ public class RepositoryProcessor extends AbstractProcessor {
 				.addAnnotation(AnnotationSpec
 						.builder(ApplicationScoped.class)
 						.build())
-				.addSuperinterface(typeMirror);
-
-		var ctx = new Context(this);
+				.addSuperinterface(type.asType());
 
 		processPersistenceContext(typeBuilder, type);
 
@@ -138,7 +126,7 @@ public class RepositoryProcessor extends AbstractProcessor {
 		try {
 			javaFile.build().writeTo(processingEnv.getFiler());
 		} catch (IOException e) {
-			processingEnv.getMessager().printMessage(ERROR, e.getMessage(), type);
+			ctx.error(type, e.getMessage());
 		}
 	}
 

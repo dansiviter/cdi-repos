@@ -105,9 +105,58 @@ public enum Util { ;
 	 * @return an optional result.
 	 * @throws IllegalStateException if there is more than one result in the stream.
 	 */
-	public static <T> Optional<T> singleResult(Stream<T> stream) {
+	public static <T> Optional<T> toOptional(Stream<T> stream) {
 		return stream
 			.filter(Objects::nonNull)
-			.reduce((t, u) -> { throw new NonUniqueResultException("More than one result"); });
+			.reduce(Util::throwNonUnique);
+	}
+
+	/**
+	 * Returns a single result from the stream. Useful when you expect only one result.
+	 *
+	 * @param <T> the number type.
+	 * @param stream the stream to use.
+	 * @return an optional result.
+	 * @throws IllegalStateException if there is more than one result in the stream.
+	 */
+	public static <T extends Number> OptionalInt toOptionalInt(Stream<T> stream) {
+		return stream
+			.filter(Objects::nonNull)
+			.mapToInt(Number::intValue)
+			.reduce(Util::throwNonUnique);
+	}
+
+	/**
+	 * Returns a single result from the stream. Useful when you expect only one result.
+	 *
+	 * @param <T> the number type.
+	 * @param stream the stream to use.
+	 * @return an optional result.
+	 * @throws IllegalStateException if there is more than one result in the stream.
+	 */
+	public static <T extends Number> OptionalLong toOptionalLong(Stream<T> stream) {
+		return stream
+			.filter(Objects::nonNull)
+			.mapToLong(Number::longValue)
+			.reduce(Util::throwNonUnique);
+	}
+
+	/**
+	 * Returns a single result from the stream. Useful when you expect only one result.
+	 *
+	 * @param <T> the number type.
+	 * @param stream the stream to use.
+	 * @return an optional result.
+	 * @throws IllegalStateException if there is more than one result in the stream.
+	 */
+	public static <T extends Number> OptionalDouble toOptionalDouble(Stream<T> stream) {
+		return stream
+			.filter(Objects::nonNull)
+			.mapToDouble(Number::doubleValue)
+			.reduce(Util::throwNonUnique);
+	}
+
+	private static <T, U, V> V throwNonUnique(T t, U u) {
+		throw new NonUniqueResultException("More than one result");
 	}
 }

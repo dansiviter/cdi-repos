@@ -15,11 +15,16 @@
  */
 package uk.dansiviter.cdi.repos.processor;
 
+import static java.lang.String.format;
+import static javax.tools.Diagnostic.Kind.ERROR;
+import static javax.tools.Diagnostic.Kind.NOTE;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.Element;
 
 import com.squareup.javapoet.JavaFile;
 
@@ -37,5 +42,13 @@ record Context(
 
 	ProcessingEnvironment env() {
 		return parent.processingEnv();
+	}
+
+	void error(Element e, String format, Object... args) {
+		env().getMessager().printMessage(ERROR, format(format, args), e);
+	}
+
+	public void note(Element e, String format, Object... args) {
+		env().getMessager().printMessage(NOTE, format(format, args), e);
 	}
 }
