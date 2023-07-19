@@ -165,6 +165,13 @@ class UtilTest {
 	}
 
 	@Test
+	void singleResult_null() {
+		var result = Util.singleResult(Stream.of((Object) null));
+
+		assertTrue(result.isEmpty());
+	}
+
+	@Test
 	void singleResult_moreThanOne() {
 		var result = assertThrows(
 			NonUniqueResultException.class,
