@@ -36,7 +36,8 @@ import java.lang.annotation.Target;
  * }
  * </pre>
  *
- * @see Message
+ * @see Query
+ * @see Temporal
  */
 @Target(TYPE)
 @Retention(RUNTIME)
