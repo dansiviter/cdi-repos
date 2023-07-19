@@ -62,6 +62,9 @@ public class RepositoryProcessor extends AbstractProcessor {
 
 	private final Supplier<Instant> nowSupplier;
 
+	/**
+	 * Creates a new processor.
+	 */
 	public RepositoryProcessor() {
 		this(Instant::now);
 	}

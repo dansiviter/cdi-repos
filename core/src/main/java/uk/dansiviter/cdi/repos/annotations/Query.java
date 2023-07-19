@@ -22,6 +22,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 import jakarta.persistence.NamedNativeQuery;
+import jakarta.persistence.NamedQuery;
 
 /**
  * Defines the {@link NamedQuery} or {@link NamedNativeQuery} to use.

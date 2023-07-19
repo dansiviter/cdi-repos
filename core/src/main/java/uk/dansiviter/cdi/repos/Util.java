@@ -70,8 +70,8 @@ public enum Util { ;
 	/**
 	 * Horrible convenience method to unwrap the value.
 	 *
-	 * @param optional
-	 * @return
+	 * @param opt the optional to extract from.
+	 * @return a Integer or {@code null}.
 	 */
 	public static Integer orElseNull(OptionalInt opt) {
 		return opt.isPresent() ? Integer.valueOf(opt.getAsInt()) : null;
@@ -80,8 +80,8 @@ public enum Util { ;
 	/**
 	 * Horrible convenience method to unwrap the value.
 	 *
-	 * @param optional
-	 * @return
+	 * @param opt the optional to extract from.
+	 * @return a Long or {@code null}.
 	 */
 	public static Long orElseNull(OptionalLong opt) {
 		return opt.isPresent() ? Long.valueOf(opt.getAsLong()) : null;
@@ -90,8 +90,8 @@ public enum Util { ;
 	/**
 	 * Horrible convenience method to unwrap the value.
 	 *
-	 * @param optional
-	 * @return
+	 * @param opt the optional to extract from.
+	 * @return a Double or {@code null}.
 	 */
 	public static Double orElseNull(OptionalDouble opt) {
 		return opt.isPresent() ? Double.valueOf(opt.getAsDouble()) : null;
