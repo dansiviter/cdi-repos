@@ -18,6 +18,7 @@ package uk.dansiviter.cdi.repos.processor;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -31,6 +32,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TemporalType;
+import jakarta.persistence.TypedQuery;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -75,18 +77,18 @@ class RepositoryCreateTest {
 
 		assertFalse(result.isPresent());
 
-		verify(this.em).find(RepositoryCreateTest.MyEntity.class, 123);
+		verify(this.em).find(MyEntity.class, 123);
 	}
 
 	@Test
-	void namedParametersQuery(@Mock jakarta.persistence.Query query) {
-		when(em.createNamedQuery(any())).thenReturn(query);
+	void namedParametersQuery(@Mock TypedQuery<MyEntity> query) {
+		when(em.createNamedQuery(any(), eq(MyEntity.class))).thenReturn(query);
 		when(query.getResultList()).thenReturn(List.of());
 
 		var result = repo.namedParametersQuery(123);
 		assertTrue(result.isEmpty());
 
-		verify(this.em).createNamedQuery("namedParametersQuery");
+		verify(this.em).createNamedQuery("namedParametersQuery", MyEntity.class);
     verify(query).setParameter("integer", 123);
     verify(query).getResultList();
 	}
