@@ -5,10 +5,15 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.PersistenceContextType;
 import jakarta.transaction.Transactional;
+import java.lang.Double;
+import java.lang.Integer;
+import java.lang.Long;
 import java.lang.Override;
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalDouble;
 import java.util.OptionalInt;
+import java.util.OptionalLong;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 import javax.annotation.processing.Generated;
@@ -123,9 +128,27 @@ public class Good$impl implements Good {
   }
 
   @Override
-  public Optional<MyEntity> singleResultQuery() {
-    var q = this.em.createNamedQuery("singleResultQuery", MyEntity.class);
-    return Util.singleResult(q.getResultStream());
+  public Optional<MyEntity> singleQuery() {
+    var q = this.em.createNamedQuery("singleQuery", MyEntity.class);
+    return Util.toOptional(q.getResultStream());
+  }
+
+  @Override
+  public OptionalInt singleIntQuery() {
+    var q = this.em.createNamedQuery("singleIntQuery", Integer.class);
+    return Util.toOptionalInt(q.getResultStream());
+  }
+
+  @Override
+  public OptionalLong singleLongQuery() {
+    var q = this.em.createNamedQuery("singleLongQuery", Long.class);
+    return Util.toOptionalLong(q.getResultStream());
+  }
+
+  @Override
+  public OptionalDouble singleDoubleQuery() {
+    var q = this.em.createNamedQuery("singleDoubleQuery", Double.class);
+    return Util.toOptionalDouble(q.getResultStream());
   }
 
   @Override

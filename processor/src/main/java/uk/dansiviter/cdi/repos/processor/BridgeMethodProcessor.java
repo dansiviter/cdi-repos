@@ -17,7 +17,6 @@ package uk.dansiviter.cdi.repos.processor;
 
 import static javax.lang.model.element.Modifier.PUBLIC;
 import static javax.lang.model.type.TypeKind.VOID;
-import static javax.tools.Diagnostic.Kind.ERROR;
 import static uk.dansiviter.cdi.repos.processor.ProcessorUtil.addTransactional;
 
 import java.util.Map;
@@ -133,7 +132,7 @@ class BridgeMethodProcessor implements SubProcessor<ExecutableElement> {
 
 	private static void verifyParamCount(Context ctx, int params, ExecutableElement e) {
 		if (e.getParameters().size() != params) {
-			ctx.env().getMessager().printMessage(ERROR, String.format("Only %d params supported", params), e);
+			ctx.error(e, "Only %d params supported on method: %s", params, e);
 		}
 	}
 

@@ -49,7 +49,21 @@ class RepositoryProcessorTest {
          .withProcessors(new RepositoryProcessor())
 						.compile(JavaFileObjects.forResource("uk/dansiviter/cdi/repos/processor/Bad.java"));
 		assertThat(compilation).failed();
-		assertThat(compilation).hadErrorContaining("Only 1 params supported");
-		assertThat(compilation).hadErrorContaining("Query name cannot be empty");
+		assertThat(compilation).hadErrorCount(5);
+		assertThat(compilation).hadErrorContaining("Query name cannot be empty on method: emptyQuery()");
+		assertThat(compilation).hadErrorContaining("Only 1 params supported on method: merge(java.lang.Object,java.lang.Object)");
+		assertThat(compilation).hadErrorContaining("Unknown return type 'uk.dansiviter.cdi.repos.processor.MyEntity' on method: responseQuery(java.lang.Object,java.lang.Object)");
+		assertThat(compilation).hadErrorContaining("Parameters not supported on EntityManager method: emParam(java.lang.Object)");
+		assertThat(compilation).hadErrorContaining("Unknown return type 'jakarta.persistence.EntityManager' on method: emQuery()");
+	}
+
+	@Test
+	void process_badClass() {
+		Compilation compilation =
+     javac()
+         .withProcessors(new RepositoryProcessor())
+						.compile(JavaFileObjects.forResource("uk/dansiviter/cdi/repos/processor/BadClass.java"));
+		assertThat(compilation).failed();
+		assertThat(compilation).hadErrorContaining("Not interface type: uk.dansiviter.cdi.repos.processor.BadClass");
 	}
 }

@@ -17,7 +17,6 @@ package uk.dansiviter.cdi.repos.processor;
 
 import static javax.lang.model.element.Modifier.PUBLIC;
 import static javax.lang.model.type.TypeKind.DECLARED;
-import static javax.tools.Diagnostic.Kind.ERROR;
 import static uk.dansiviter.cdi.repos.processor.ProcessorUtil.isClass;
 
 import javax.lang.model.element.ExecutableElement;
@@ -43,7 +42,7 @@ class EntityManagerMethodProcessor implements SubProcessor<ExecutableElement> {
 		}
 
 		if (!e.getParameters().isEmpty()) {
-			ctx.env().getMessager().printMessage(ERROR, "Methods returning EntityManager cannot have parameters", e);
+			ctx.error(e, "Parameters not supported on EntityManager method: %s", e);
 			return;
 		}
 

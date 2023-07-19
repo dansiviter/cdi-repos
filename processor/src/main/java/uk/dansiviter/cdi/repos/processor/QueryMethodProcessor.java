@@ -18,7 +18,6 @@ package uk.dansiviter.cdi.repos.processor;
 import static javax.lang.model.type.TypeKind.INT;
 import static javax.lang.model.type.TypeKind.LONG;
 import static javax.lang.model.type.TypeKind.VOID;
-import static javax.tools.Diagnostic.Kind.ERROR;
 import static uk.dansiviter.cdi.repos.processor.ProcessorUtil.addTransactional;
 import static uk.dansiviter.cdi.repos.processor.ProcessorUtil.isClass;
 
@@ -56,7 +55,7 @@ class QueryMethodProcessor implements SubProcessor<ExecutableElement> {
 		}
 
 		if (query.value().isEmpty()) {
-			ctx.env().getMessager().printMessage(ERROR, "Query name cannot be empty", e);
+			ctx.error(e, "Query name cannot be empty on method: %s", e);
 			return;
 		}
 
@@ -68,12 +67,20 @@ class QueryMethodProcessor implements SubProcessor<ExecutableElement> {
 
 		var returnType = e.getReturnType();
 
+		ctx.env().getElementUtils().getTypeElement(Stream.class.toString());
+
 		if (isClass(ctx.env(), returnType, Stream.class) ||
 				isClass(ctx.env(), returnType, List.class) ||
 				isClass(ctx.env(), returnType, Optional.class))
 		{
 			var dt = (DeclaredType) returnType;
 			method.addStatement("var q = this.em.createNamedQuery($S, $T.class)", query.value(), dt.getTypeArguments().get(0));
+		} else if (isClass(ctx.env(), returnType, OptionalInt.class)) {
+			method.addStatement("var q = this.em.createNamedQuery($S, $T.class)", query.value(), Integer.class);
+		} else if (isClass(ctx.env(), returnType, OptionalLong.class)) {
+			method.addStatement("var q = this.em.createNamedQuery($S, $T.class)", query.value(), Long.class);
+		} else if (isClass(ctx.env(), returnType, OptionalDouble.class)) {
+			method.addStatement("var q = this.em.createNamedQuery($S, $T.class)", query.value(), Double.class);
 		} else {
 			method.addStatement("var q = this.em.createNamedQuery($S)", query.value());
 		}
@@ -85,13 +92,19 @@ class QueryMethodProcessor implements SubProcessor<ExecutableElement> {
 		} else if (isClass(ctx.env(), returnType, List.class)) {
 			method.addStatement("return q.getResultList()");
 		} else if (isClass(ctx.env(), returnType, Optional.class)) {
-			method.addStatement("return $T.singleResult(q.getResultStream())", Util.class);
+			method.addStatement("return $T.toOptional(q.getResultStream())", Util.class);
+		} else if (isClass(ctx.env(), returnType, OptionalInt.class)) {
+			method.addStatement("return $T.toOptionalInt(q.getResultStream())", Util.class);
+		} else if (isClass(ctx.env(), returnType, OptionalLong.class)) {
+			method.addStatement("return $T.toOptionalLong(q.getResultStream())", Util.class);
+		} else if (isClass(ctx.env(), returnType, OptionalDouble.class)) {
+			method.addStatement("return $T.toOptionalDouble(q.getResultStream())", Util.class);
 		} else if (returnType.getKind() == INT || returnType.getKind() == LONG) {
 			method.addStatement("return q.executeUpdate()");
 		} else if (returnType.getKind() == VOID) {
 			method.addStatement("q.executeUpdate()");
 		} else {
-			ctx.env().getMessager().printMessage(ERROR, "Unknown return type '" + e.getReturnType() + "'!", e);
+			ctx.error(e, "Unknown return type '" + e.getReturnType() + "' on method: %s", e);
 			return;
 		}
 

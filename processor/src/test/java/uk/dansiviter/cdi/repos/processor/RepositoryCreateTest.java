@@ -131,6 +131,12 @@ class RepositoryCreateTest {
 		@Query(value = "temporalQuery")
 		List<MyEntity> temporalQuery(@Temporal(TemporalType.DATE) Calendar date);
 
+		@Query(value = "optionalQuery")
+		Optional<MyEntity> optionalQuery();
+
+		@Query(value = "optionalIntQuery")
+		OptionalInt optionalIntQuery();
+
 		@Query("streamQuery")
 		Stream<MyEntity> streamQuery();
 
