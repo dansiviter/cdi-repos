@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>uk.dansiviter.cdi-repos</groupId>
 	<artifactId>cdi-repos-project</artifactId>
-	<version>0.1.0</version>
+	<version>0.1.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>CDI Repositories</name>
 	<description>Library to help simplfy JPA CDI Repositories</description>
@@ -15,7 +15,7 @@
 		<developerConnection>scm:git:git@github.com:dansiviter/cdi-repos.git</developerConnection>
 		<connection>scm:git:git@github.com:dansiviter/cdi-repos.git</connection>
 		<url>https://github.com/dansiviter/cdi-repos</url>
-		<tag>cdi-repos-project-0.1.0</tag>
+		<tag>HEAD</tag>
 	</scm>
 
 	<licenses>
