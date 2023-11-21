@@ -3,7 +3,7 @@
 
 # CDI Repositories #
 
-This library is for auto-generating repositories somewhat similar to Spring and Micronaut Data projects but more cross platform.
+This library is for auto-generating repositories somewhat similar to [Jakarta Data](/jakartaee/data), Spring and Micronaut Data projects. However, instead of performing compilation magic (i.e. no source code) or generating queries from method names (i.e. brittle) it takes a transparent approach which is both minimal and easy to debug.
 
 
 ## Usage ##
@@ -91,10 +91,16 @@ Then there are query methods:
   Stream<MyEntity> myQueryStream(String queryParam);
 
   /**
+   * If you expect a single result using Query#getSingleResult.
+   */
+  @Query("mySingleResult")
+  MyEntity myOptionalSingleResultQuery(String param);
+
+  /**
    * You can expect zero or one result. If more than one result is returned NonUniqueResultException will be thrown.
    */
-  @Query("mySingleResultQuery")
-  Optional<MyEntity> mySingleResultQuery(String param);
+  @Query("myOptionalSingleResult")
+  Optional<MyEntity> myOptionalSingleResultQuery(String param);
 
   /**
    * If a void, int or long is used then it will use Query#executeUpdate and return the result if possible.

@@ -98,7 +98,7 @@ public enum Util { ;
 	}
 
 	/**
-	 * Returns a single result from the stream. Useful when you expect only one result.
+	 * Returns a single result from the stream. Useful when you expect only one or no result.
 	 *
 	 * @param <T> the object type.
 	 * @param stream the stream to use.
@@ -112,7 +112,7 @@ public enum Util { ;
 	}
 
 	/**
-	 * Returns a single result from the stream. Useful when you expect only one result.
+	 * Returns a single result from the stream. Useful when you expect only one or no result.
 	 *
 	 * @param <T> the number type.
 	 * @param stream the stream to use.
@@ -127,7 +127,7 @@ public enum Util { ;
 	}
 
 	/**
-	 * Returns a single result from the stream. Useful when you expect only one result.
+	 * Returns a single result from the stream. Useful when you expect only one or no result.
 	 *
 	 * @param <T> the number type.
 	 * @param stream the stream to use.
@@ -142,7 +142,7 @@ public enum Util { ;
 	}
 
 	/**
-	 * Returns a single result from the stream. Useful when you expect only one result.
+	 * Returns a single result from the stream. Useful when you expect only one or no result.
 	 *
 	 * @param <T> the number type.
 	 * @param stream the stream to use.

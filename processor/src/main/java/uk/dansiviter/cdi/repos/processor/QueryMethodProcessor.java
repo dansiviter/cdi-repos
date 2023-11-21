@@ -16,7 +16,6 @@
 package uk.dansiviter.cdi.repos.processor;
 
 import static javax.lang.model.type.TypeKind.INT;
-import static javax.lang.model.type.TypeKind.LONG;
 import static javax.lang.model.type.TypeKind.VOID;
 import static uk.dansiviter.cdi.repos.processor.ProcessorUtil.addTransactional;
 import static uk.dansiviter.cdi.repos.processor.ProcessorUtil.isClass;
@@ -32,6 +31,8 @@ import java.util.stream.Stream;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.type.DeclaredType;
+
+import jakarta.persistence.EntityManager;
 
 import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.MethodSpec;
@@ -69,6 +70,11 @@ class QueryMethodProcessor implements SubProcessor<ExecutableElement> {
 
 		ctx.env().getElementUtils().getTypeElement(Stream.class.toString());
 
+		if (isClass(ctx.env(), returnType, EntityManager.class)) {
+			ctx.error(e, "Unsupported return type '%s' on method: %s", e.getReturnType(), e);
+			return;
+		}
+
 		if (isClass(ctx.env(), returnType, Stream.class) ||
 				isClass(ctx.env(), returnType, List.class) ||
 				isClass(ctx.env(), returnType, Optional.class))
@@ -99,13 +105,12 @@ class QueryMethodProcessor implements SubProcessor<ExecutableElement> {
 			method.addStatement("return $T.toOptionalLong(q.getResultStream())", Util.class);
 		} else if (isClass(ctx.env(), returnType, OptionalDouble.class)) {
 			method.addStatement("return $T.toOptionalDouble(q.getResultStream())", Util.class);
-		} else if (returnType.getKind() == INT || returnType.getKind() == LONG) {
+		} else if (returnType.getKind() == INT) {
 			method.addStatement("return q.executeUpdate()");
 		} else if (returnType.getKind() == VOID) {
 			method.addStatement("q.executeUpdate()");
 		} else {
-			ctx.error(e, "Unknown return type '" + e.getReturnType() + "' on method: %s", e);
-			return;
+			method.addStatement("return $T.class.cast(q.getSingleResult())", returnType);
 		}
 
 		builder.addMethod(method.build());
