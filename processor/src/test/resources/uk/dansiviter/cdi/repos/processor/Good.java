@@ -1,6 +1,7 @@
 package uk.dansiviter.cdi.repos.processor;
 
 import java.lang.reflect.InvocationTargetException;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalDouble;
@@ -52,6 +53,9 @@ interface Good {
 
 	@Query(value = "query", namedParameters = true)
 	int namedParametersQuery(int arg);
+
+	@Query("singleResultQuery")
+  BigDecimal singleResultQuery();
 
 	@Query("listQuery")
 	List<MyEntity> listQuery();

@@ -9,6 +9,7 @@ import java.lang.Double;
 import java.lang.Integer;
 import java.lang.Long;
 import java.lang.Override;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalDouble;
@@ -101,7 +102,7 @@ public class Good$impl implements Good {
   public long query(OptionalInt arg) {
     var q = this.em.createNamedQuery("query");
     q.setParameter(1, Util.orElseNull(arg));
-    return q.executeUpdate();
+    return long.class.cast(q.getSingleResult());
   }
 
   @Override
@@ -109,6 +110,12 @@ public class Good$impl implements Good {
     var q = this.em.createNamedQuery("query");
     q.setParameter("arg", arg);
     return q.executeUpdate();
+  }
+
+  @Override
+  public BigDecimal singleResultQuery() {
+    var q = this.em.createNamedQuery("singleResultQuery");
+    return BigDecimal.class.cast(q.getSingleResult());
   }
 
   @Override
